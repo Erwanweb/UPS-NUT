@@ -16,9 +16,10 @@
         <param field="Mode3" label="Low Battery Threshold (%)" width="150px" required="true" default="25"/>
         <param field="Mode6" label="Logging Level" width="200px">
             <options>
-                <option label="Normal" value="Normal" default="true"/>
-                <option label="Verbose" value="Verbose"/>
-                <option label="Debug" value="2"/>
+                <option label="Normal" value="0" default="true"/>
+                <option label="Debug - Python Only" value="2"/>
+                <option label="Debug - Basic" value="62"/>
+                <option label="Debug - All" value="1"/>
             </options>
         </param>
     </params>
@@ -61,10 +62,18 @@ class BasePlugin:
         except Exception:
             self.low_battery_threshold = 25
 
-        if Parameters["Mode6"] != "Normal":
+        # setup the appropriate logging level
+        try:
+            debuglevel = int(Parameters["Mode6"])
+        except ValueError:
+            debuglevel = 0
+            self.loglevel = Parameters["Mode6"]
+        if debuglevel != 0:
             self.debug = True
-            Domoticz.Debugging(2)
+            Domoticz.Debugging(debuglevel)
+            DumpConfigToLog()
         else:
+            self.debug = False
             Domoticz.Debugging(0)
 
         self.create_devices()
